@@ -1,0 +1,64 @@
+{
+    "name": "odan/slim4-skeleton",
+    "description": "A Slim 4 skeleton",
+    "license": "MIT",
+    "type": "project",
+    "keywords": [
+        "slim-framework",
+        "skeleton",
+        "slim",
+        "slim4"
+    ],
+    "require": {
+        "php": "8.2.* || 8.3.*",
+        "ext-json": "*",
+        "fig/http-message-util": "^1.1",
+        "firebase/php-jwt": "^6.11",
+        "monolog/monolog": "^3",
+        "nyholm/psr7": "^1.8.1",
+        "nyholm/psr7-server": "^1.1",
+        "php-di/php-di": "^7",
+        "selective/basepath": "^2",
+        "slim/slim": "^4"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3",
+        "phpstan/phpstan": "1.*",
+        "phpunit/phpunit": "^11",
+        "rector/rector": "^1.2",
+        "selective/test-traits": "^4",
+        "squizlabs/php_codesniffer": "^3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Test\\": "tests/"
+        }
+    },
+    "config": {
+        "process-timeout": 0,
+        "sort-packages": true
+    },
+    "scripts": {
+        "cs:check": "php-cs-fixer fix --dry-run --format=txt --verbose --config=.cs.php --ansi",
+        "cs:fix": "php-cs-fixer fix --config=.cs.php --ansi --verbose",
+        "sniffer:check": "phpcs --standard=phpcs.xml",
+        "sniffer:fix": "phpcbf --standard=phpcs.xml",
+        "stan": "phpstan analyse -c phpstan.neon --no-progress --ansi",
+        "start": "php -S localhost:8080 -t public/",
+        "test": "phpunit --configuration phpunit.xml --do-not-cache-result --colors=always --display-warnings --display-deprecations --no-coverage",
+        "test:all": [
+            "@sniffer:check",
+            "@stan",
+            "@test:coverage"
+        ],
+        "test:coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit --configuration phpunit.xml --do-not-cache-result --colors=always --display-warnings --display-deprecations --coverage-clover build/coverage/clover.xml --coverage-html build/coverage --coverage-text"
+        ]
+    }
+}
