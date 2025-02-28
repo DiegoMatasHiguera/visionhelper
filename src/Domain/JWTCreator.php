@@ -9,7 +9,7 @@ use Firebase\JWT\JWT;
  * Generador de tokens JWT
  */
 class JWTCreator {
-    private static $access_validez = 60 * 60; // 1 hora
+    private static $access_validez = 60 * 15; // 15 minutos
     public static $refresh_validez = 60 * 60 * 24 * 7; // 7 días
 
     /**
@@ -20,11 +20,12 @@ class JWTCreator {
      * @param   string  $algorithm  El algoritmo de encriptación.
      * @return  string  El token.
      */
-    public static function generateAccessToken($userId, $secret, $algorithm) {
+    public static function generateAccessToken($userId, $tipo, $secret, $algorithm) {
         $payload = [
             "iat" => time(), // Issued at
             "exp" => time() + (self::$access_validez),
-            "sub" => $userId
+            "sub" => $userId,
+            "tipo" => $tipo // Add the user's role to the payload
         ];
 
         return JWT::encode($payload, $secret, $algorithm);

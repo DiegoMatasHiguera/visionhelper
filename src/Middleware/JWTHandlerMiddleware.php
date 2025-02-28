@@ -102,14 +102,15 @@ final class JwtHandlerMiddleware implements MiddlewareInterface
                 return $this->renderer->json($response, $data);
             }
     
-            $newAccessToken = JWTCreator::generateAccessToken($row['user_email'],$this->settings["secret"], $this->settings["algorithm"]);
+            $newAccessToken = JWTCreator::generateAccessToken($row['user_email'],$decoded->tipo,$this->settings["secret"], $this->settings["algorithm"]);
             // Almacenar el nuevo access token en la respuesta
             $request = $request->withAttribute('access_token', $newAccessToken);
         }
 
-        // Almacenar el email del usuario en el header
+        // Almacenar el email del usuario y el rol en el header
         $request = $request->withAddedHeader('user_email', $decoded->sub);
-        
+        $request = $request->withAddedHeader('tipo', $decoded->tipo);
+
         // Continuar con el siguiente middleware
         return $handler->handle($request);
     }

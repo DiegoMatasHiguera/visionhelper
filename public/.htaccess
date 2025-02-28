@@ -4,3 +4,9 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [QSA,L]
+
+<IfModule mod_headers.c>
+    Header Set Access-Control-Allow-Origin "*"
+    Header Set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header Set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>

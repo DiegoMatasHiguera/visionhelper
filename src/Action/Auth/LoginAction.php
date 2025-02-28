@@ -49,19 +49,19 @@ final class LoginAction
 
         $conex = new Conexion();
         $pdo = $conex->getDatabaseConnection();
-        $stmt = $pdo->prepare("SELECT contrasena FROM usuarios WHERE email = :user_email");
+        $stmt = $pdo->prepare("SELECT contrasena, tipo FROM usuarios WHERE email = :user_email");
         $stmt->execute(['user_email' => $user_email]);
         $user = $stmt->fetch();
 
-        if (!$user || $password != $user['contrasena']) {
+        if (!$user || !password_verify($password, $user['contrasena'])) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_UNAUTHORIZED);
             $data = [
-                "error" => "Missing user_email or password"
+                "error" => "User not found or password incorrect"
             ];
             return $this->renderer->json($response, $data);
         }
 
-        $accessToken = JWTCreator::generateAccessToken($user_email, $this->settings['jwt']['secret'], $this->settings['jwt']['algorithm']);
+        $accessToken = JWTCreator::generateAccessToken($user_email, $user['tipo'], $this->settings['jwt']['secret'], $this->settings['jwt']['algorithm']);
         $refreshToken = JWTCreator::generateRefreshToken();
 
         // Guardar el token de refresco en la base de datos
