@@ -49,7 +49,7 @@ final class LoginAction
 
         $conex = new Conexion();
         $pdo = $conex->getDatabaseConnection();
-        $stmt = $pdo->prepare("SELECT contrasena, tipo FROM usuarios WHERE email = :user_email");
+        $stmt = $pdo->prepare("SELECT nombre, contrasena, tipo FROM usuarios WHERE email = :user_email");
         $stmt->execute(['user_email' => $user_email]);
         $user = $stmt->fetch();
 
@@ -61,7 +61,7 @@ final class LoginAction
             return $this->renderer->json($response, $data);
         }
 
-        $accessToken = JWTCreator::generateAccessToken($user_email, $user['tipo'], $this->settings['jwt']['secret'], $this->settings['jwt']['algorithm']);
+        $accessToken = JWTCreator::generateAccessToken($user_email, $user['tipo'], $user['nombre'], $this->settings['jwt']['secret'], $this->settings['jwt']['algorithm']);
         $refreshToken = JWTCreator::generateRefreshToken();
 
         // Guardar el token de refresco en la base de datos
@@ -77,6 +77,12 @@ final class LoginAction
             'access_token' => $accessToken,
             'refresh_token' => $refreshToken
         ];
+
+        // Almacenar el email del usuario y el rol en el header
+        $response = $response->withAddedHeader('user_email', $user_email);
+        $response = $response->withAddedHeader('tipo', $user['tipo']);
+        $response = $response->withAddedHeader('user_name', $user['nombre']);
+
         return $this->renderer->json($response, $data);
     }
 }

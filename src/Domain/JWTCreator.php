@@ -16,15 +16,18 @@ class JWTCreator {
      * Genera un token de acceso para un usuario (de corta vida)
      *
      * @param   string  $userId     El email del usuario.
+     * @param   string  $tipo       El tipo de usuario.
+     * @param   string  $userName     El nombre del usuario.
      * @param   string  $secret     La clave secreta.
      * @param   string  $algorithm  El algoritmo de encriptación.
      * @return  string  El token.
      */
-    public static function generateAccessToken($userId, $tipo, $secret, $algorithm) {
+    public static function generateAccessToken($userId, $tipo, $userName, $secret, $algorithm) {
         $payload = [
             "iat" => time(), // Issued at
             "exp" => time() + (self::$access_validez),
-            "sub" => $userId,
+            "sub" => $userId,            
+            "name" => $userName,
             "tipo" => $tipo // Add the user's role to the payload
         ];
 
