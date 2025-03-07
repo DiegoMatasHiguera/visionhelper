@@ -22,13 +22,11 @@ class JWTCreator {
      * @param   string  $algorithm  El algoritmo de encriptación.
      * @return  string  El token.
      */
-    public static function generateAccessToken($userId, $tipo, $userName, $secret, $algorithm) {
+    public static function generateAccessToken($userId, $secret, $algorithm) {
         $payload = [
             "iat" => time(), // Issued at
             "exp" => time() + (self::$access_validez),
             "sub" => $userId,            
-            "name" => $userName,
-            "tipo" => $tipo // Add the user's role to the payload
         ];
 
         return JWT::encode($payload, $secret, $algorithm);

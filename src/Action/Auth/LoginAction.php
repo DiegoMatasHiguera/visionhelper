@@ -61,7 +61,7 @@ final class LoginAction
             return $this->renderer->json($response, $data);
         }
 
-        $accessToken = JWTCreator::generateAccessToken($user_email, $user['tipo'], $user['nombre'], $this->settings['jwt']['secret'], $this->settings['jwt']['algorithm']);
+        $accessToken = JWTCreator::generateAccessToken($user_email, $this->settings['jwt']['secret'], $this->settings['jwt']['algorithm']);
         $refreshToken = JWTCreator::generateRefreshToken();
 
         // Guardar el token de refresco en la base de datos
@@ -75,13 +75,12 @@ final class LoginAction
 
         $data = [
             'access_token' => $accessToken,
-            'refresh_token' => $refreshToken
+            'refresh_token' => $refreshToken,
+            // Devolvemos también esto para que el usuario lo use
+            'user_email' => $user_email,
+            'tipo' => $user['tipo'],
+            'user_name' => $user['nombre']
         ];
-
-        // Almacenar el email del usuario y el rol en el header
-        $response = $response->withAddedHeader('user_email', $user_email);
-        $response = $response->withAddedHeader('tipo', $user['tipo']);
-        $response = $response->withAddedHeader('user_name', $user['nombre']);
 
         return $this->renderer->json($response, $data);
     }

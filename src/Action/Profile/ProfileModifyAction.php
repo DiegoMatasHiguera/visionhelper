@@ -10,7 +10,7 @@ use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-final class ProfileAction
+final class ProfileModifyAction
 {
     private JsonRenderer $renderer;
 
@@ -21,11 +21,11 @@ final class ProfileAction
 
     /**
      * API:
-     * GET /profile/{user_email}
+     * PUT /profile/{user_email}
      * 
-     * Recupera los datos de un usuario (excepto la contraseña y el email)
+     * Modifica los datos de un usuario (excepto el nombre)
      * 
-     * @return string Un JSON con los datos del usuario, o el mensaje de error correspondiente.
+     * @return string Un JSON con un nuevo access y refresh token, o el mensaje de error correspondiente.
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $user_email = (string) $args['user_email'];

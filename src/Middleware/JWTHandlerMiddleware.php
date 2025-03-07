@@ -58,59 +58,73 @@ final class JwtHandlerMiddleware implements MiddlewareInterface
             ];
             return $this->renderer->json($response, $data);
         }
+        
+        $conex = new Conexion();
+        $pdo = $conex->getDatabaseConnection();
 
+        $user_email = '';
         try {
-            $decoded = JWT::decode($accessToken, new Key($this->settings["secret"], $this->settings["algorithm"]));
+            $decode = JWT::decode($accessToken, new Key($this->settings["secret"], $this->settings["algorithm"]));
+            $user_email = $decode->sub;           
         } catch (Exception $e) {
-            $response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_UNAUTHORIZED);
+            // Comprobar si ha expirado el access token, y generar otro si el refresh token sigue siendo válido
+            if ($e->getMessage() === "Expired token") {
+                $data = [
+                    "error1" => "Access token expired"
+                ];
+
+                $refreshToken = $headers['refresh_token'][0] ?? '';
+
+                if (empty($refreshToken)) {
+                    $response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
+                    $response = $response->withAddedHeader('Content-Type', 'application/json');
+                    $data += [
+                        "error2" => "Missing refresh token"
+                    ];
+                    return $this->renderer->json($response, $data);
+                }
+
+                $stmt = $pdo->prepare("SELECT user_email FROM refresh_tokens WHERE token = :token AND expires_at > NOW()");
+                $stmt->execute(['token' => $refreshToken]);
+                $row = $stmt->fetch();
+        
+                if (!$row) {
+                    $response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_UNAUTHORIZED);
+                    $response = $response->withAddedHeader('Content-Type', 'application/json');
+                    $data += [
+                        "error2" => "Invalid or expired refresh token"
+                    ];
+                    return $this->renderer->json($response, $data);
+                } else {
+                    $user_email = $row['user_email'];
+                }
+        
+                $newAccessToken = JWTCreator::generateAccessToken($user_email, $this->settings["secret"], $this->settings["algorithm"]);
+                // Almacenar el nuevo access token en el header
+                $request = $request->withAddedHeader('access_token', $newAccessToken);
+            } else {
+                $response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_UNAUTHORIZED);
+                $response = $response->withAddedHeader('Content-Type', 'application/json');
+                $data = [
+                    "error" => "Token not valid"
+                ];
+                return $this->renderer->json($response, $data);
+            }
+        }
+        
+        // Comprobar si el email del token se corresponde con alguno de la base de datos
+        $stmt = $pdo->prepare("SELECT tipo, nombre FROM usuarios WHERE email = :user_email");
+        $stmt->execute(['user_email' => $user_email]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            $response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_NOT_FOUND);
             $response = $response->withAddedHeader('Content-Type', 'application/json');
             $data = [
-                "error" => "Token not valid"
+                "error" => "User declared in access token is not found in database"
             ];
             return $this->renderer->json($response, $data);
         }
-        
-        // Comprobar si ha expirado el access token, y generar otro si el refresh token sigue siendo válido
-        if ($decoded->exp < time()) {
-            $data = [
-                "error1" => "Access token expired"
-            ];
-
-            $refreshToken = $headers['refresh_token'][0] ?? '';
-
-            if (empty($refreshToken)) {
-                $response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_BAD_REQUEST);
-                $response = $response->withAddedHeader('Content-Type', 'application/json');
-                $data += [
-                    "error2" => "Missing refresh token"
-                ];
-                return $this->renderer->json($response, $data);
-            }
-            
-            $conex = new Conexion();
-            $pdo = $conex->getDatabaseConnection();
-            $stmt = $pdo->prepare("SELECT user_email FROM refresh_tokens WHERE token = :token AND expires_at < NOW()");
-            $stmt->execute(['token' => $refreshToken]);
-            $row = $stmt->fetch();
-    
-            if (!$row) {
-                $response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_UNAUTHORIZED);
-                $response = $response->withAddedHeader('Content-Type', 'application/json');
-                $data += [
-                    "error2" => "Invalid or expired refresh token"
-                ];
-                return $this->renderer->json($response, $data);
-            }
-    
-            $newAccessToken = JWTCreator::generateAccessToken($row['user_email'],$decoded->tipo,$decoded->name,$this->settings["secret"], $this->settings["algorithm"]);
-            // Almacenar el nuevo access token en el header
-            $request = $request->withAddedHeader('access_token', $newAccessToken);
-        }
-
-        // Almacenar el email del usuario y el rol en el header
-        $request = $request->withAddedHeader('user_email', $decoded->sub);
-        $request = $request->withAddedHeader('tipo', $decoded->tipo);
-        $request = $request->withAddedHeader('user_name', $decoded->name);
 
         // Continuar con el siguiente middleware
         return $handler->handle($request);
