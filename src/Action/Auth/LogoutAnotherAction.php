@@ -41,7 +41,7 @@ final class LogoutAnotherAction
             return $this->renderer->json($response, $data);
         } else if ($header_email !== $user_email) {            
             // Si no eres el mismo usuario, necesitas ser administrador
-            if ($header_tipo !== "administrador") {
+            if ($header_tipo !== "Administrador") {
                 $response = $response->withStatus(StatusCodeInterface::STATUS_UNAUTHORIZED);
                 $data = [
                     "error" => "Unauthorized to force logout this user, you need higher privileges",

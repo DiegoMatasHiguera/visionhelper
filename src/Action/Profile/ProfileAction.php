@@ -40,7 +40,7 @@ final class ProfileAction
             return $this->renderer->json($response, $data);
         } else if ($header_email !== $user_email) {
             // Si no eres el mismo usuario, necesitas ser administrador
-            if ($header_tipo !== "administrador") {
+            if ($header_tipo !== "Administrador") {
                 $response = $response->withStatus(StatusCodeInterface::STATUS_UNAUTHORIZED);
                 $data = [
                     "error" => "Unauthorized to check this user, you need higher privileges",
@@ -53,7 +53,7 @@ final class ProfileAction
 
         $conex = new Conexion();
         $pdo = $conex->getDatabaseConnection();
-        $stmt = $pdo->prepare("SELECT tipo, nombre, fecha_nacimiento, sexo, corr_ocular, fecha_rev_ocular, avatar_url, avatar_x, avatar_y FROM usuarios WHERE email = :user_email");
+        $stmt = $pdo->prepare("SELECT tipo, nombre, fecha_nacimiento, sexo, corr_ocular, fecha_rev_ocular, avatar_url FROM usuarios WHERE email = :user_email");
         $stmt->execute(['user_email' => $user_email]);
         $user = $stmt->fetch();
 

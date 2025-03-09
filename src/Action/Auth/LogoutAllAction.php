@@ -31,7 +31,7 @@ final class LogoutAllAction
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $header_tipo = $request->getHeaders()['tipo'][0] ?? '';
         
-        if ($header_tipo !== "administrador") {
+        if ($header_tipo !== "Administrador") {
             $response = $response->withStatus(StatusCodeInterface::STATUS_UNAUTHORIZED);
             $data = [
                 "error" => "Unauthorized to force logout all, you need higher privileges"

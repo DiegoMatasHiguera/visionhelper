@@ -31,7 +31,7 @@ public/.env
 env.php
 config/env.php
 
-#!public/assets/
+public/avatars/
 #public/assets/*
 #!public/assets/.htaccess
 

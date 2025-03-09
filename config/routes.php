@@ -15,4 +15,5 @@ return function (App $app) {
     $app->post('/auth/logoutAll', \App\Action\Auth\LogoutAllAction::class)->add(JwtHandlerMiddleware::class);
     $app->delete('/auth/remove/{user_email}', \App\Action\Auth\RemoveAction::class)->add(JwtHandlerMiddleware::class);
     $app->get('/profile/{user_email}', \App\Action\Profile\ProfileAction::class)->add(JwtHandlerMiddleware::class);
+    $app->post('/profile/{user_email}', \App\Action\Profile\ProfileModifyAction::class)->add(JwtHandlerMiddleware::class);
 };

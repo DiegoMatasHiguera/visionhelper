@@ -25,29 +25,36 @@ final class LogoutAction
      * 
      * Elimina un token de refresco, forzando al usuario a loginearse de nuevo
      * 
-     * @param object $request Con header con el campo "refresh_token"
+     * @param object $request Con header con el campo "user_email"
      * @return string Un JSON con el "message" de logout conseguido, o el "error" correspondiente.
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
         $headers = $request->getHeaders();
-        $refreshToken = $headers['refresh_token'][0] ?? '';
+        $user_email = $headers['user_email'][0] ?? '';
 
-        if (!$refreshToken) {
+        if (!$user_email) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_BAD_REQUEST);
             $data = [
-                "error" => "Missing refresh token for logout"
+                "error" => "Missing user email for logout"
             ];
             return $this->renderer->json($response, $data);
         }
 
         $conex = new Conexion();
         $pdo = $conex->getDatabaseConnection();
-        $stmt = $pdo->prepare("DELETE FROM refresh_tokens WHERE token = :token");
-        $stmt->execute(['token' => $refreshToken]);
+        $stmt = $pdo->prepare("DELETE FROM refresh_tokens WHERE user_email = :user_email");
+        $stmt->execute(['user_email' => $user_email]);
 
         $data = [
-            "message" => "Loged out successfully"
+            "message" => "Logged out successfully"
         ];
         return $this->renderer->json($response, $data);
+    }
+
+    public static function logoutInterno($user_email) {
+        $conex = new Conexion();
+        $pdo = $conex->getDatabaseConnection();
+        $stmt = $pdo->prepare("DELETE FROM refresh_tokens WHERE user_email = :user_email");
+        $stmt->execute(['user_email' => $user_email]);
     }
 }
