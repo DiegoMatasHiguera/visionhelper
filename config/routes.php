@@ -16,4 +16,7 @@ return function (App $app) {
     $app->delete('/auth/remove/{user_email}', \App\Action\Auth\RemoveAction::class)->add(JwtHandlerMiddleware::class);
     $app->get('/profile/{user_email}', \App\Action\Profile\ProfileAction::class)->add(JwtHandlerMiddleware::class);
     $app->post('/profile/{user_email}', \App\Action\Profile\ProfileModifyAction::class)->add(JwtHandlerMiddleware::class);
+    $app->get('/tests/{tipo_usuario}', \App\Action\Tests\TestsGetAction::class)->add(JwtHandlerMiddleware::class);
+    $app->post('/productos', \App\Action\Productos\ProductosGetAction::class)->add(JwtHandlerMiddleware::class);
+    $app->post('/lotes', \App\Action\Lotes\LotesGetAction::class)->add(JwtHandlerMiddleware::class);
 };

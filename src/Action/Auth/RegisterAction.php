@@ -23,21 +23,22 @@ final class RegisterAction
      * API:
      * POST /auth/register
      * 
-     * Registra a un usuario base con contraseña y email, comprobando que no hay otro usuario con el mismo email
+     * Registra a un usuario con contraseña, email y un rol, comprobando que no hay otro usuario con el mismo email
      * 
-     * @param object $request El body, con los campos "user_email" y "password"
+     * @param object $request El body, con los campos "user_email", "password" y "tipo" (Administrador, Elaboración ó Control de Calidad)
      * @return string Un JSON con el mensaje de error o éxito correspondiente.
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $data = $request->getParsedBody();
         $user_email = $data['user_email'] ?? '';
-        $password = $data['password'] ?? '';      
+        $password = $data['password'] ?? '';
+        $tipo = $data['tipo'] ?? '';  
 
-        if (empty($user_email) || empty($password)) {            
+        if (empty($user_email) || empty($password) || empty($tipo)) {            
             $response = $response->withStatus(StatusCodeInterface::STATUS_BAD_REQUEST);
             $data = [
-                "error" => "Missing user_email or password"
+                "error" => "Missing user_email, password o tipo"
             ];
             return $this->renderer->json($response, $data);
         }
@@ -58,8 +59,8 @@ final class RegisterAction
 
         // If the email does not exist, register the new user        
         $password = password_hash($data['password'], PASSWORD_BCRYPT); // Hashing  
-        $stmt = $pdo->prepare("INSERT INTO usuarios (email, contrasena, tipo) VALUES (:user_email, :password, 'usuario')");
-        $result = $stmt->execute(['user_email' => $user_email, 'password' => $password]);
+        $stmt = $pdo->prepare("INSERT INTO usuarios (email, contrasena, tipo) VALUES (:user_email, :password, :tipo)");
+        $result = $stmt->execute(['user_email' => $user_email, 'password' => $password, 'tipo' => $tipo]);
         if (!$result) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
             $data = [
