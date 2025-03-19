@@ -21,20 +21,22 @@ final class TestsGetAction
 
     /**
      * API:
-     * GET /tests/{tipo_usuario}
+     * POST /tests/
      * 
-     * Recupera los tests disponibles para un tipo de usuario
+     * Recupera los tests disponibles para un tipo de usuario o un usuario específico
      * 
-     * @args Con path query "tipo_usuario" para comprobar el tipo de usuario
+     * @param object $request Con los campos "tipo_usuario" y "user_email" para filtrar los tests
      * @return string Un JSON array con los datos de todos los tests disponibles, o el mensaje de error correspondiente.
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
-        $tipo_usuario = (string) $args['tipo_usuario'];
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
+        $data = $request->getParsedBody();
+        $tipo_usuario = $data['tipo_usuario'] ?? null;
+        $user_email = $data['user_email'] ?? null;
 
-        if (!$tipo_usuario) {
+        if (!$tipo_usuario && !$user_email) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_BAD_GATEWAY);
             $data = [
-                "error" => "Bad route: Introduzca el tipo de usuario"
+                "error" => "Bad route: Introduzca el tipo de usuario o el email del usuario"
             ];
             return $this->renderer->json($response, $data);
         }
@@ -42,13 +44,14 @@ final class TestsGetAction
         // Cogemos los tests
         $conex = new Conexion();
         $pdo = $conex->getDatabaseConnection();
-        // El administrador puede ver todos los tests, los usuarios sólo veran los que no estén aceptados ni rechazados
+        // El administrador puede ver todos los tests, los usuarios sólo veran los que no estén aceptados ni rechazados, y los que sean exclusivos para ellos
         if ($tipo_usuario === "Administrador") {
             $stmt = $pdo->prepare("SELECT * FROM tests");
+            $stmt->execute();
         } else {
-            $stmt = $pdo->prepare("SELECT * FROM tests WHERE estado != 'Aceptado' AND estado != 'Rechazado'");
+            $stmt = $pdo->prepare("SELECT * FROM tests WHERE estado != 'Aceptado' AND estado != 'Rechazado' AND (exclusivo_de IS NULL OR exclusivo_de = :user_email)");
+            $stmt->execute(['user_email' => $user_email]);
         }
-        $stmt->execute();
         $tests = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         // Cogemos los tipos de muestreo correspondientes
@@ -73,7 +76,7 @@ final class TestsGetAction
             foreach ($tests as $test) {
                 foreach ($tipos_muestreo as $tipo_muestreo) {
                     if ($test['nombre_muestreo'] === $tipo_muestreo['nombre']) {
-                        if ($tipo_muestreo['exclusivo_de'] === "" || $tipo_muestreo['exclusivo_de'] === $tipo_usuario) {                            
+                        if ($tipo_muestreo['exclusivo_de'] === "" || $tipo_muestreo['exclusivo_de'] === $tipo_usuario || $tipo_muestreo['exclusivo_de'] === "Usuario") {                            
                             $tests_filtrados[] = $test;
                         }
                         break;
