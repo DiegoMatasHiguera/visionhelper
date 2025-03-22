@@ -60,21 +60,27 @@ final class TestsConcretoGetAction
         if (!$test) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_NOT_FOUND);
             $data = [
-                "error" => "No se ha encontrado el test"
+                "error" => "No se ha encontrado el test o no se tiene acceso a él"
             ];
             return $this->renderer->json($response, $data);
         }
 
 
         // Cogemos el tipo de muestreo correspondiente
-        $stmt = $pdo->prepare("SELECT * FROM tipos_muestreo WHERE nombre = :nombre_muestreo");
-        $stmt->execute(['nombre_muestreo' => $test[0]['nombre_muestreo']]);
+        // El administrador puede ver todos los muestreos, los usuarios sólo veran los que permitan su rol
+        if ($tipo_usuario === "Administrador") {
+            $stmt = $pdo->prepare("SELECT * FROM tipos_muestreo WHERE nombre = :nombre_muestreo");        
+            $stmt->execute(['nombre_muestreo' => $test[0]['nombre_muestreo']]);
+        } else {
+            $stmt = $pdo->prepare("SELECT * FROM tipos_muestreo WHERE nombre = :nombre_muestreo AND (exclusivo_de IS NULL OR exclusivo_de = 'Usuario' OR exclusivo_de = :tipo_usuario)");
+            $stmt->execute(['nombre_muestreo' => $test[0]['nombre_muestreo'], 'tipo_usuario' => $tipo_usuario]);
+        }
         $tipo_muestreo = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         if (!$tipo_muestreo) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_NOT_FOUND);
             $data = [
-                "error" => "No se ha encontrado el tipo de muestreo"
+                "error" => "No se ha encontrado el tipo de muestreo o no se tiene acceso a él"
             ];
             return $this->renderer->json($response, $data);
         }
