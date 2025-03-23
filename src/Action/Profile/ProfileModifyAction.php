@@ -101,6 +101,7 @@ final class ProfileModifyAction
         if ($header_tipo === "Administrador") {
             $usuario->tipo = $data['tipo'] ?? $usuario->tipo;
             $usuario->nombre = $data['nombre'] ?? $usuario->nombre;
+            $usuario->cualificado = $data['cualificado'] ?? $usuario->cualificado;
             // Ver si el usuario con email cambiado ya existe
             if (isset($data['email']) && $data['email'] !== $usuario->email) {
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE email = :email");

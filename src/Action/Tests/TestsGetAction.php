@@ -53,6 +53,15 @@ final class TestsGetAction
             $stmt->execute(['user_email' => $user_email]);
         }
         $tests = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        // Comprobamos si hay algún examen pasado de fecha
+        $fecha_actual = date('Y-m-d');
+        foreach ($tests as $test) {
+            if (str_contains($test['nombre_muestreo'], "Examen") && $test['fecha_objetivo'] < $fecha_actual && $test['estado'] != "Aceptado") {
+                $stmt = $pdo->prepare("UPDATE usuarios SET cualificado = 0 WHERE email = :user_email");
+                $stmt->execute(['user_email' => $user_email]);
+                break;
+            }
+        }
 
         // Cogemos los tipos de muestreo correspondientes
         $stmt = $pdo->prepare("SELECT * FROM tipos_muestreo");

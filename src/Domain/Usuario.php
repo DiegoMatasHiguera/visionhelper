@@ -21,6 +21,7 @@ class Usuario
     public $corr_ocular;
     public $fecha_rev_ocular;
     public $avatar_url;
+    public $cualificado;
     
     /**
      * Constructor
@@ -115,6 +116,7 @@ class Usuario
                 $this->corr_ocular = $data['corr_ocular'];
                 $this->fecha_rev_ocular = $data['fecha_rev_ocular'];
                 $this->avatar_url = $data['avatar_url'];
+                $this->cualificado = $data['cualificado'];
                 return [
                     'success' => true
                 ];

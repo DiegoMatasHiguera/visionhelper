@@ -53,7 +53,7 @@ final class ProfileAction
 
         $conex = new Conexion();
         $pdo = $conex->getDatabaseConnection();
-        $stmt = $pdo->prepare("SELECT tipo, nombre, fecha_nacimiento, sexo, corr_ocular, fecha_rev_ocular, avatar_url FROM usuarios WHERE email = :user_email");
+        $stmt = $pdo->prepare("SELECT tipo, nombre, fecha_nacimiento, sexo, corr_ocular, fecha_rev_ocular, avatar_url, cualificado FROM usuarios WHERE email = :user_email");
         $stmt->execute(['user_email' => $user_email]);
         $user = $stmt->fetch();
 
