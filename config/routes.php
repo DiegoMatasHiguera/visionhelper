@@ -21,4 +21,6 @@ return function (App $app) {
     $app->post('/productos', \App\Action\Productos\ProductosGetAction::class)->add(JwtHandlerMiddleware::class);
     $app->post('/lotes', \App\Action\Lotes\LotesGetAction::class)->add(JwtHandlerMiddleware::class);
     $app->post('/tests/registerMuestreo/{id_test}', \App\Action\Tests\MuestreoRegistrarAction::class)->add(JwtHandlerMiddleware::class);
+    $app->post('/unidades/register', \App\Action\Unidades\UnidadRegisterAction::class)->add(JwtHandlerMiddleware::class);
+    $app->get('/unidades/{id_test}', \App\Action\Unidades\UnidadesGetTest::class)->add(JwtHandlerMiddleware::class);
 };

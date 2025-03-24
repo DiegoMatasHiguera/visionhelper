@@ -28,7 +28,7 @@ final class ProductosGetAction
      * @param object $request Con el campo "productos" que es un array con los ids de los productos.
      * @return string Un JSON array con los datos de todos esos productos, o el mensaje de error correspondiente.
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
         // Get the request body as parsed array
         $data = $request->getParsedBody();
         $id_productos = $data['productos'] ?? null;

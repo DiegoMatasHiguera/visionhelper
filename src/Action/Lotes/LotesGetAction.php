@@ -28,7 +28,7 @@ final class LotesGetAction
      * @param object $request Con el campo "lotes" que es un array con los ids de los lotes.
      * @return string Un JSON array con los datos de todos esos productos, o el mensaje de error correspondiente.
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface {
         // Get the request body as parsed array
         $data = $request->getParsedBody();
         $id_lotes = $data['lotes'] ?? null;

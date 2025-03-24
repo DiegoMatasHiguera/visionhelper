@@ -25,6 +25,8 @@ final class ProfileAction
      * 
      * Recupera los datos de un usuario (excepto la contraseña y el email)
      * 
+     * @param object $request Con header con el campo "tipo" para comprobar si es administrador,
+     * @param array $args Con el campo "user_email" que es el email del usuario
      * @return string Un JSON con los datos del usuario, o el mensaje de error correspondiente.
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
