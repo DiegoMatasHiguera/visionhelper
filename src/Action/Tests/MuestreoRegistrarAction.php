@@ -26,7 +26,7 @@ final class MuestreoRegistrarAction
      * Registra un esquema de muestreo generado por un usuario para un test
      * 
      * @param array $args Con el campo "id_test" que es el id del test
-     * @param object $request El body, en formato JSON
+     * @param object $request El body con el esquema de muestreo, en formato JSON
      * @return string Un JSON con el mensaje de error o éxito correspondiente.
      */
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -52,6 +52,17 @@ final class MuestreoRegistrarAction
             $response = $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
             $data = [
                 "error" => "Error insertando el muestreo"
+            ];
+            return $this->renderer->json($response, $data);
+        }
+
+        // Eliminamos todas las unidades revisadas del test
+        $stmt = $pdo->prepare("DELETE FROM unidades WHERE id_test = :id_test");
+        $result = $stmt->execute(['id_test' => $id_test]);
+        if (!$result) {
+            $response = $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
+            $data = [
+                "error" => "Error eliminando las unidades previamente revisadas"
             ];
             return $this->renderer->json($response, $data);
         }

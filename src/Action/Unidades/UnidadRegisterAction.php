@@ -72,7 +72,7 @@ final class UnidadRegisterAction
             ];
             return $this->renderer->json($response, $data);
         }
-
+        
         $data = [
             'message' => "Unidad registered successfully"
         ];
