@@ -44,7 +44,7 @@ final class UnidadesGetTest
         $pdo = $conex->getDatabaseConnection();
 
         // Si existe, actualizamos la unidad. Y si no, la creamos
-        $stmt = $pdo->prepare("SELECT * FROM unidades WHERE id_test = :id_test ORDER BY id_en_muestreo DESC");
+        $stmt = $pdo->prepare("SELECT * FROM unidades WHERE id_test = :id_test ORDER BY id_en_muestreo ASC");
         $result = $stmt->execute(['id_test' => $id_test]);
         if (!$result) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);

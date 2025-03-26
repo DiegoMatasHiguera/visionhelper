@@ -47,12 +47,12 @@ final class TestsConcretoGetAction
         // Cogemos el test
         $conex = new Conexion();
         $pdo = $conex->getDatabaseConnection();
-        // El administrador puede ver todos los tests, los usuarios sólo veran los que no estén aceptados ni rechazados, y los que sean exclusivos para ellos
+        // El administrador puede ver todos los tests, los usuarios sólo veran los que sean exclusivos para ellos
         if ($tipo_usuario === "Administrador") {
             $stmt = $pdo->prepare("SELECT * FROM tests WHERE id = :id");            
             $stmt->execute(['id' => $id]);
         } else {
-            $stmt = $pdo->prepare("SELECT * FROM tests WHERE estado != 'Aceptado' AND estado != 'Rechazado' AND (exclusivo_de IS NULL OR exclusivo_de = :user_email) AND id = :id");
+            $stmt = $pdo->prepare("SELECT * FROM tests WHERE (exclusivo_de IS NULL OR exclusivo_de = :user_email) AND id = :id");
             $stmt->execute(['user_email' => $user_email, 'id' => $id]);
         }
         $test = $stmt->fetchAll(\PDO::FETCH_ASSOC);

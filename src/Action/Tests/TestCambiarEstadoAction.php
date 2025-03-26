@@ -4,6 +4,7 @@ namespace App\Action\Tests;
 
 use App\Renderer\JsonRenderer;
 use App\Domain\Conexion;
+use App\Domain\TestService;
 
 use Fig\Http\Message\StatusCodeInterface;
 
@@ -76,6 +77,42 @@ final class TestCambiarEstadoAction
                 "error" => "Error modificando el estado"
             ];
             return $this->renderer->json($response, $data);
+        }
+
+        if ($estado == 'Aceptado') {                
+            // Get info del test actual
+            $stmt = $pdo->prepare("SELECT * FROM tests WHERE id = :id_test");
+            $stmt->execute(['id_test' => $id_test]);
+            $test_actual = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $test_actual = $test_actual[0];
+            // Si el test tiene programado la generación de otro test una vez aceptado, lo generamos
+            $stmt = $pdo->prepare("SELECT genera FROM tipos_muestreo WHERE nombre = :nombre_muestreo");
+            $stmt->execute(['nombre_muestreo' => $test_actual['nombre_muestreo']]);
+            $generar_test = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            if ($generar_test[0]["genera"]) {
+                // Get info del tipo de muestreo xdel test a generar
+                $stmt = $pdo->prepare("SELECT exclusivo_de, plazo FROM tipos_muestreo WHERE nombre = :nombre_muestreo");
+                $stmt->execute(['nombre_muestreo' => $generar_test[0]["genera"]]);
+                $tipo_muestreo_nuevo = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                $tipo_muestreo_nuevo = $tipo_muestreo_nuevo[0];
+
+                $test_exclusivo_de = '';
+                if ($tipo_muestreo_nuevo['exclusivo_de'] == 'Usuario') {
+                    $test_exclusivo_de = $header_user_email;
+                }
+
+                // Generar el nuevo test
+                $testService = new TestService($pdo);
+                $newTestData = [
+                    'lote' => $test_actual['lote'],
+                    'nombre_muestreo' => $generar_test[0]["genera"],
+                    'fecha_creacion' => date('Y-m-d'), // current date
+                    'estado' => 'Nuevo',
+                    'exclusivo_de' => $test_exclusivo_de
+                ];
+                
+                $testService->createTest($newTestData);
+            }
         }
 
         $data = [
